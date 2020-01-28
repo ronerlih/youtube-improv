@@ -1,0 +1,407 @@
+<html>
+	<head>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+	<title>mason gross choreography on youtube</title>
+	<style>
+
+	body{
+	margin:0px;
+	padding:0px;
+	background: black;
+	cursor:url(curser.jpg), auto;
+	}
+	*{cursor:url(curser.jpg),auto;}
+	
+	html::-webkit-scrollbar{
+	  	  background-color: black;
+		  color: black;
+		  width:0px;
+	}
+	html::-webkit-scrollbar-thumb{
+	  	  background-color: gray;
+		  width:0px;
+	}
+	#info{
+/*	background:white;*/
+	width:100%;
+	margin-top:120vh;
+	}
+	#videoSizeSlider{
+	margin:10px;
+	margin-top:400px;
+	height:0px;
+	width:200px;
+	}
+	.ui-slider-handle{height:8px!important;}
+	#info > h5{
+	margin-top:10px;
+	text-align: center;
+	padding:100px;
+	margin-bottom: 0;
+	color:silver;
+		
+	background-color: #666666;
+	-webkit-background-clip: text;
+	-moz-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	text-shadow: rgba(255,255,255,0.5) 0px 3px 3px;
+	
+	font-size:1.4em;
+	}
+	input{
+	 background-color: #e7e5e5;
+    width: 28px;
+    text-align: center;
+    color: gray;
+    border: 1px outset #8080808f;
+    border-radius: 3px;
+    border-style: inset;
+	}
+	#textInput{
+	margin:10px;
+	color:gray;
+	display: none;
+	
+	}
+	iframe{
+	display: inline-block;
+	vertical-align: middle; 
+
+	}
+	#player{
+	display:block;
+	padding-top:5px;
+	}
+	</style>
+	</head>
+  <body>
+    <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+	 <center>
+	 
+	 <div id="player">
+	 </div>
+	 
+	 </center>
+
+	 <div id="info">
+	 
+	 <div id="videoSizeSlider"></div>
+	 <div id="textInput">
+	 <span>width: &nbsp;</span><input type="text" value="89"><span>&nbsp;px</span>
+	 </div>
+<!--	 <h5><em>"mason gross choreography" on youtube</em></h5>-->
+	 </div>
+	 </center>
+    <script>
+	 	var videosData;
+		var gotResult = false;
+		var sorted;
+		var videoGrid = true;
+		var imageGrid = false;
+		var zoom = false;
+		var maxPlayCount = 12;
+		var playCount = 0;
+		var iframeHeight = 89;
+		var iframeWidth = 158;
+		var playQue = [];
+		var videoReadyCount = 0;
+		var playObject = {};
+		var donePlaying = false;
+		var bufferQue = [];
+		
+		
+		var widthParameter = getUrlParameter('width');
+		
+		if(widthParameter){
+		console.log("\n\n widthParameter: " + getUrlParameter('width'));
+		
+			iframeWidth = getUrlParameter('width');
+			var videoHeight = Math.floor( iframeWidth * (9/16));
+			iframeHeight = videoHeight;
+			$( "input" ).val( iframeWidth);
+		}else{
+		console.log("\n\nnull");
+		}
+		
+		setTimeout(function(){
+			$( "#videoSizeSlider" ).slider({	max: 300,
+										min: 20,
+										orientation: "horizontal",
+										step: 1,
+										value: iframeHeight,
+										animate: "fast",
+										slide: function( event, ui ) {  changeVideoSize(ui);}} );
+			$( "#textInput" ).show();
+			$( "input" ).keyup(function() {
+				 var value = $( this ).val();
+				 changeVideoSizeFromInput(value);
+			  })
+			  .keyup();
+		
+		}, 4000);
+		
+      // 2. This code loads the IFrame Player API code asynchronously.
+      var tag = document.createElement('script');
+
+      tag.src = "https://www.youtube.com/iframe_api";
+      var firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+		 
+//		$.getJSON("videos-insight.json", function(json) {
+		$.getJSON("colorSorted.json", function(json) {
+//    		console.log(json); // this will show the info it in firebug console
+			videosData = json;
+			
+			//test
+			var obj = videosData;
+			var result = Object.keys(obj).map(function(key) {
+			  return [Number(key), obj[key]];
+			});
+
+//			console.log(result);
+			
+			//create elements
+			result.forEach(function(videoObj, index){
+//			console.log("\nurl: " + videoObj[1].url);
+				
+				//create element for video
+				var videoElement = document.createElement('div');
+				videoElement.setAttribute("id", videoObj[1].url);;
+				$('#player').after(videoElement);
+				
+			});
+			sorted = result;
+			gotResult = true;
+			
+
+		}	);
+		
+		function changeVideoSize(slider){
+			console.log("\n\nhandle value: " + slider.value);
+			
+			playQue.forEach(function(url){
+				var videoHeight = Math.floor( slider.value * (9/16));
+				$( "input" ).val(slider.value)
+				$('#'+url).width(slider.value);
+				$('#'+url).height(videoHeight);
+			});
+		}
+		
+		function changeVideoSizeFromInput(val){
+			console.log("\n\ninput value: " + val);
+			playQue.forEach(function(url){
+				var videoHeight = Math.floor( val * (9/16));
+				$('#'+url).width(val);
+				$('#'+url).height(videoHeight);
+			});
+			
+		}
+		
+      // create an <iframe> (and YouTube player)
+      // after the API code downloads.
+      
+      function onYouTubeIframeAPIReady() {
+			if(gotResult == false){
+				onYouTubeIframeAPIReady();
+			}else{
+
+				//video grid
+				if(videoGrid){
+					sorted.forEach(function(videoObj, index){
+						_video = new YT.Player(videoObj[1].url, {
+							 height: iframeHeight,
+							 width: iframeWidth,
+							 videoId: videoObj[1].url,
+							 setPlaybackQuality: 'small',
+							 modestbranding: '1',
+							 playerVars: {'modestbranding':1, 'version':3,'setPlaybackQuality':'small','autoplay': 0, 'controls': 0, 'autohide' :1, 'showinfo': 0},
+							 modestbranding:'1',
+							 events: {
+								'onReady': onPlayerReady,
+				            'onStateChange': onPlayerStateChange
+							 }
+						});
+						playQue.push(videoObj[1].url);
+				});
+				}
+
+	//			imag grid
+				if(imageGrid){
+					sorted.forEach(function(videoObj, index){
+
+					var imgElem = document.createElement('img');
+						imgElem.setAttribute("src", 'http://img.youtube.com/vi/'+videoObj[1].url+'/default.jpg');
+	//					imgElem.setAttribute("height",'54');
+	//					imgElem.setAttribute("width",'96');
+						imgElem.setAttribute("style","position: relative; clip:rect(20px,96px,30px,10px)");
+						document.getElementById('player').appendChild(imgElem);
+				});
+
+				}
+		}
+	}
+
+      // 4. The API will call this function when the video player is ready.
+      function onPlayerReady(event) {
+			var vidData =	event.target.getVideoData();
+//			console.log("\nvideoid: " + vidData.video_id);
+ 
+			playObject[vidData.video_id] = event.target;
+
+			
+//        setTimeout(function(){event.target.playVideo();},2,function(){event.target.pauseVideo();});
+        
+			 //add to playing que array
+//			 playQue.push(videoObj[1].url);
+			videoReadyCount++;
+//			console.log("event.target: " + event.target);
+			if(videoReadyCount == sorted.length){
+			console.log("\n\n\nall videos ready");
+			var randomVideo = Math.floor(Math.random() * (sorted.length-1));
+		 	console.log("onplayerReady url: " + playQue[randomVideo]);
+			
+			startQue(playQue[randomVideo]);
+			}
+      }
+
+		 function startQue(url){
+		 	console.log("startQue url: " + url);
+		 	playObject[url].playVideo();
+			console.log("playing: " + url);
+			var randomVideo = Math.floor(Math.random() * (sorted.length-1));
+			
+			if(playCount <= maxPlayCount && donePlaying == false){
+			if(playCount >= (maxPlayCount - 1)){
+				
+				setTimeout(function(){
+					randomVideo = Math.floor(Math.random() * (sorted.length-1));
+					playObject[playQue[randomVideo]].playVideo();
+				}, 1000);
+				
+				setTimeout(function(){
+					randomVideo = Math.floor(Math.random() * (sorted.length-1));
+					playObject[playQue[randomVideo]].playVideo();
+				}, 2000);
+				
+				setTimeout(function(){
+					randomVideo = Math.floor(Math.random() * (sorted.length-1));
+					playObject[playQue[randomVideo]].playVideo();
+				}, 3000);
+				
+				setTimeout(function(){
+					randomVideo = Math.floor(Math.random() * (sorted.length-1));
+					playObject[playQue[randomVideo]].playVideo();
+					
+					randomVideo = Math.floor(Math.random() * (sorted.length-1));
+					playObject[playQue[randomVideo]].playVideo();
+				}, 4000);
+					randomVideo = Math.floor(Math.random() * (sorted.length-1));
+					playObject[playQue[randomVideo]].playVideo();
+				
+					randomVideo = Math.floor(Math.random() * (sorted.length-1));
+					playObject[playQue[randomVideo]].playVideo();
+				
+					randomVideo = Math.floor(Math.random() * (sorted.length-1));
+					playObject[playQue[randomVideo]].playVideo();
+				
+					randomVideo = Math.floor(Math.random() * (sorted.length-1));
+					playObject[playQue[randomVideo]].playVideo();
+				
+					randomVideo = Math.floor(Math.random() * (sorted.length-1));
+					playObject[playQue[randomVideo]].playVideo();
+				
+				
+				
+			}
+			if(playCount >= (maxPlayCount - 2)){
+				setTimeout(function(){
+					randomVideo = Math.floor(Math.random() * (sorted.length-1));
+					playObject[playQue[randomVideo]].playVideo();
+					
+					randomVideo = Math.floor(Math.random() * (sorted.length-1));
+					playObject[playQue[randomVideo]].playVideo();
+				}, 1000);
+				
+				
+					randomVideo = Math.floor(Math.random() * (sorted.length-1));
+					playObject[playQue[randomVideo]].playVideo();
+				
+				
+			}
+			if(playCount >= (maxPlayCount - 3)){
+				setTimeout(function(){
+					randomVideo = Math.floor(Math.random() * (sorted.length-1));
+					playObject[playQue[randomVideo]].playVideo();
+				}, 2000);
+				randomVideo = Math.floor(Math.random() * (sorted.length-1));
+					playObject[playQue[randomVideo]].playVideo();
+
+					randomVideo = Math.floor(Math.random() * (sorted.length-1));
+					playObject[playQue[randomVideo]].playVideo();
+				
+				
+			}
+			randomVideo = Math.floor(Math.random() * (sorted.length-1));
+			setTimeout(function(){startQue(playQue[randomVideo]);},18000);
+			}else{
+				playQue.forEach(function(url){playObject[url].playVideo();});
+				donePlaying= true;
+			}
+			playCount++;
+			
+		 }
+		 
+      // 5. The API calls this function when the player's state changes.
+      //    The function indicates that when playing a video (state=1),
+      //    the player should play for six seconds and then stop.
+//      var done = false;
+      
+		function onPlayerStateChange(event) {
+			//stop video after 12 sec
+//        if (event.data == YT.PlayerState.PLAYING) {
+//          setTimeout(pauseVideo(event.target), 12000);
+//        }
+			
+			// pasue on play
+			if(event.data == 1){
+			var vidData =	event.target.getVideoData();
+			console.log("\n started to play and schedule pause for videoid: " + vidData.video_id);
+ 			
+			if(zoom){
+			//zoom
+			$('#'+vidData.video_id).animate({height:300},500).height(300);
+			$('#'+vidData.video_id).animate({width:300},500).width(300);
+			}
+			setTimeout(function(){pauseVideo(vidData.video_id);},22000);
+			}
+			
+			}
+		
+      function pauseVideo(url) {
+		playObject[url].pauseVideo();
+		if(zoom){
+		$('#'+url).animate({height:iframeHeight},500);
+		$('#'+url).animate({width:iframeWidth},500);
+		}
+      }
+		function getUrlParameter(sParam){
+			 var sPageURL = window.location.search.substring(1);
+			 console.log("\n\nurl parms: " +sPageURL);
+			 var sURLVariables = sPageURL.split('&');
+			 for (var i = 0; i < sURLVariables.length; i++) 
+			 {
+				  var sParameterName = sURLVariables[i].split('=');
+				  if (sParameterName[0] == sParam) 
+				  {
+				  		console.log("\n\nparm value: " +sParameterName[1]);
+						return sParameterName[1];
+						break;
+				  }
+			 }
+		}
+    </script>
+  </body>
+</html>

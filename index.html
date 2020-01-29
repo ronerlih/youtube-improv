@@ -94,7 +94,8 @@
 	 </div>
 <!--	 <h5><em>"mason gross choreography" on youtube</em></h5>-->
 	 </div>
-	 </center>
+   </center>
+   <script src="https://apis.google.com/js/api.js"></script>
     <script>
 	 	var videosData;
 		var gotResult = false;
@@ -111,9 +112,34 @@
 		var playObject = {};
 		var donePlaying = false;
 		var bufferQue = [];
-		
-		
+    const API_KEY = "AIzaSyBXWaQDch4zxWFqYfaEjDBPzdz204TT7Gg";
+
+    function callSearchAPI() {
+    return gapi.client.youtube.search.list({
+      "part": "snippet",
+      "q": "mason gross",
+      "type": "video"
+    })
+        .then(function(response) {
+                // Handle the results here (response.result has the parsed body).
+                console.log("Response", response);
+              },
+              function(err) { console.error("Execute error", err); });
+  }
+    function loadClient() {
+    gapi.client.setApiKey(API_KEY);
+    return gapi.client.load("https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest")
+        .then(function() { 
+          console.log("GAPI client loaded for API");
+          callSearchAPI();
+         },
+              function(err) { console.error("Error loading GAPI client for API", err); });
+  }
+   // Make sure the client is loaded and sign-in is complete before calling this method.
+   
+
 		var widthParameter = getUrlParameter('width');
+		var searchParameter = getUrlParameter('q');
 		
 		if(widthParameter){
 		console.log("\n\n widthParameter: " + getUrlParameter('width'));
@@ -151,7 +177,17 @@
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 		 
 //		$.getJSON("videos-insight.json", function(json) {
-		$.getJSON("colorSorted.json", function(json) {
+    if(searchParameter){
+      fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=mason%20gross&type=video&key=AIzaSyBXWaQDch4zxWFqYfaEjDBPzdz204TT7Gg`,
+      {headers:{
+        Accept: "application/json",
+
+      }})
+        .then(data => json(data))
+        .then(data => console.log(data));
+
+    }else{
+      $.getJSON("colorSorted.json", function(json) {
 //    		console.log(json); // this will show the info it in firebug console
 			videosData = json;
 			
@@ -178,6 +214,7 @@
 			
 
 		}	);
+    }
 		
 		function changeVideoSize(slider){
 			console.log("\n\nhandle value: " + slider.value);

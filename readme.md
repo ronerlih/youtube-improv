@@ -8,4 +8,4 @@
 - Search quary for youtube api: 
 `.../?q=[string]`
 - Example:
-`https://ronerlih.github.io/youtube-improv/?q=dogs&width=200`
+[https://ronerlih.github.io/youtube-improv/?q=dogs&width=135](https://ronerlih.github.io/youtube-improv/?q=dogs&width=135)

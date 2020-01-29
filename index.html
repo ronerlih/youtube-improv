@@ -178,13 +178,32 @@
 		 
 //		$.getJSON("videos-insight.json", function(json) {
     if(searchParameter){
-      fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=mason%20gross&type=video&key=AIzaSyBXWaQDch4zxWFqYfaEjDBPzdz204TT7Gg`,
+      fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=100&type=video&q=${searchParameter}&type=video&key=AIzaSyDV2cSN8lup51y1dTl1gXuNWzvJgEGvD2E`,
       {headers:{
-        Accept: "application/json",
+        Accept: "application/json"
 
       }})
-        .then(data => json(data))
-        .then(data => console.log(data));
+        .then(data => data.json()) 
+        .then(data => {
+         result = data.items.map(function(id, index){
+//			console.log("\nurl: " + videoObj[1].url);
+				console.log(id.id);
+				//create element for video
+				var videoElement = document.createElement('div');
+				videoElement.setAttribute("id", id.id.videoId);;
+        $('#player').after(videoElement);
+
+        return [index, {url: id.id.videoId, color:[0,0,0]}]
+        });
+        console.log(result);
+        sorted = result;
+        gotResult = true;
+        console.log("calling ready");
+        onYouTubeIframeAPIReady();
+      }
+      );
+      
+			
 
     }else{
       $.getJSON("colorSorted.json", function(json) {
@@ -211,11 +230,11 @@
 			});
 			sorted = result;
 			gotResult = true;
+      onYouTubeIframeAPIReady()
 			
 
 		}	);
     }
-		
 		function changeVideoSize(slider){
 			console.log("\n\nhandle value: " + slider.value);
 			
@@ -239,8 +258,9 @@
 		
       // create an <iframe> (and YouTube player)
       // after the API code downloads.
-      
       function onYouTubeIframeAPIReady() {
+        console.log("calling ready");
+
 			if(gotResult == false){
 				onYouTubeIframeAPIReady();
 			}else{
@@ -248,6 +268,7 @@
 				//video grid
 				if(videoGrid){
 					sorted.forEach(function(videoObj, index){
+            console.log(videoObj);
 						_video = new YT.Player(videoObj[1].url, {
 							 height: iframeHeight,
 							 width: iframeWidth,
@@ -258,11 +279,13 @@
 							 modestbranding:'1',
 							 events: {
 								'onReady': onPlayerReady,
-				            'onStateChange': onPlayerStateChange
+				        'onStateChange': onPlayerStateChange
 							 }
-						});
-						playQue.push(videoObj[1].url);
-				});
+            });
+            console.log(_video);
+            playQue.push(videoObj[1].url);
+        });
+        console.log(playQue);
 				}
 
 	//			imag grid
@@ -283,6 +306,7 @@
 
       // 4. The API will call this function when the video player is ready.
       function onPlayerReady(event) {
+        console.log('on player ready');
 			var vidData =	event.target.getVideoData();
 //			console.log("\nvideoid: " + vidData.video_id);
  

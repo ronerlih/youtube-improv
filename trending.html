@@ -177,9 +177,9 @@
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 		 
 //		$.getJSON("videos-insight.json", function(json) {
-    if(searchParameter){
-      fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&type=video&q=${searchParameter}&type=video&key=AIzaSyDV2cSN8lup51y1dTl1gXuNWzvJgEGvD2E`,
-      // fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-&key=AIzaSyDV2cSN8lup51y1dTl1gXuNWzvJgEGvD2E`,
+    // if(searchParameter){
+      // fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&type=video&q=${searchParameter}&type=video&key=AIzaSyDV2cSN8lup51y1dTl1gXuNWzvJgEGvD2E`,
+      fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-&key=AIzaSyDV2cSN8lup51y1dTl1gXuNWzvJgEGvD2E`,
       {headers:{
         Accept: "application/json"
 
@@ -189,13 +189,13 @@
           console.log(data.items);
          result = data.items.reverse().map(function(id, index){
 //			console.log("\nurl: " + videoObj[1].url);
-				console.log(id.id);
+				console.log(id.snippet.resourceId);
 				//create element for video
 				var videoElement = document.createElement('div');
-				videoElement.setAttribute("id", id.id.videoId);;
+				videoElement.setAttribute("id", id.snippet.resourceId.videoId);;
         $('#player').after(videoElement);
 
-        return [index, {url: id.id.videoId, color:[0,0,0]}]
+        return [index, {url: id.snippet.resourceId.videoId, color:[0,0,0]}]
         });
         sorted = result;
         gotResult = true;
@@ -206,36 +206,36 @@
       
 			
 
-    }else{
-      $.getJSON("colorSorted.json", function(json) {
-//    		console.log(json); // this will show the info it in firebug console
-			videosData = json;
+//     }else{
+//       $.getJSON("colorSorted.json", function(json) {
+// //    		console.log(json); // this will show the info it in firebug console
+// 			videosData = json;
 			
-			//test
-			var obj = videosData;
-			var result = Object.keys(obj).map(function(key) {
-			  return [Number(key), obj[key]];
-			});
+// 			//test
+// 			var obj = videosData;
+// 			var result = Object.keys(obj).map(function(key) {
+// 			  return [Number(key), obj[key]];
+// 			});
 
-//			console.log(result);
+// //			console.log(result);
 			
-			//create elements
-			result.forEach(function(videoObj, index){
-//			console.log("\nurl: " + videoObj[1].url);
+// 			//create elements
+// 			result.forEach(function(videoObj, index){
+// //			console.log("\nurl: " + videoObj[1].url);
 				
-				//create element for video
-				var videoElement = document.createElement('div');
-				videoElement.setAttribute("id", videoObj[1].url);;
-				$('#player').after(videoElement);
+// 				//create element for video
+// 				var videoElement = document.createElement('div');
+// 				videoElement.setAttribute("id", videoObj[1].url);;
+// 				$('#player').after(videoElement);
 				
-			});
-			sorted = result;
-			gotResult = true;
-      onYouTubeIframeAPIReady()
+// 			});
+// 			sorted = result;
+// 			gotResult = true;
+//       onYouTubeIframeAPIReady()
 			
 
-		}	);
-    }
+// 		}	);
+//     }
 		function changeVideoSize(slider){
 			console.log("\n\nhandle value: " + slider.value);
 			
